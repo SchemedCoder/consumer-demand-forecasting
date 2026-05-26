@@ -1,5 +1,3 @@
-# consumer-demand-forecasting
-
 # Consumer Demand Forecasting Platform
 
 ## Overview
