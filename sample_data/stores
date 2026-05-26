@@ -1,0 +1,9 @@
+store_id,store_name,city,region
+1,Delhi Central,Delhi,North
+2,Gurgaon Hub,Gurgaon,North
+3,Mumbai South,Mumbai,West
+4,Bangalore Tech,Bangalore,South
+5,Hyderabad Plaza,Hyderabad,South
+6,Chennai Central,Chennai,South
+7,Kolkata Market,Kolkata,East
+8,Pune Mall,Pune,West
