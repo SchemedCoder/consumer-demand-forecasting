@@ -1,0 +1,105 @@
+import pandas as pd
+from sqlalchemy import create_engine
+
+DB_USER = "postgres"
+DB_PASSWORD = "postgres"
+DB_HOST = "localhost"
+DB_PORT = "5432"
+DB_NAME = "consumer_demand"
+
+engine = create_engine(
+    f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+)
+
+TRANSFORMED_FILE = "data/transformed_sales.csv"
+
+
+def load_bronze():
+
+    df = pd.read_csv(
+        TRANSFORMED_FILE
+    )
+
+    bronze_cols = [
+        "sale_id",
+        "product_id",
+        "store_id",
+        "qty",
+        "unit_price",
+        "sale_date",
+        "ingest_time"
+    ]
+
+    bronze_df = df[bronze_cols]
+
+    bronze_df.to_sql(
+        "sales_raw",
+        engine,
+        if_exists="append",
+        index=False
+    )
+
+    print(
+        f"Loaded {len(bronze_df)} rows to Bronze"
+    )
+
+
+def load_silver():
+
+    df = pd.read_csv(
+        TRANSFORMED_FILE
+    )
+
+    silver_cols = [
+        "sale_id",
+        "product_id",
+        "store_id",
+        "qty",
+        "revenue",
+        "sale_date",
+        "ingest_time"
+    ]
+
+    silver_df = df[silver_cols]
+
+    silver_df.to_sql(
+        "sales_clean",
+        engine,
+        if_exists="append",
+        index=False
+    )
+
+    print(
+        f"Loaded {len(silver_df)} rows to Silver"
+    )
+
+
+def build_gold():
+
+    query = """
+    SELECT
+        sale_date,
+        product_id,
+        SUM(qty) AS total_qty,
+        SUM(revenue) AS total_revenue
+    FROM sales_clean
+    GROUP BY
+        sale_date,
+        product_id
+    """
+
+    gold_df = pd.read_sql(
+        query,
+        engine
+    )
+
+    gold_df.to_sql(
+        "daily_product_sales",
+        engine,
+        if_exists="replace",
+        index=False
+    )
+
+    print(
+        f"Built Gold table with {len(gold_df)} rows"
+    )
